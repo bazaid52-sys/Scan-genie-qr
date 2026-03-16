@@ -3,128 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScanFlow Pro | Ultra-Fast Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>ScanFlow Pro</title>
     <style>
-        :root {
-            --primary: #6c5ce7;
-            --surface: #ffffff;
-            --bg: #f4f7fe;
-            --text-main: #1b1b2f;
-            --transition: all 0.2s ease; /* Super fast transition */
-        }
+        :root { --primary: #5e5ce6; --bg: #f2f2f7; }
+        body { margin: 0; font-family: -apple-system, sans-serif; display: flex; height: 100vh; background: var(--bg); }
+        
+        /* Sidebar */
+        .sidebar { width: 240px; background: #ffffff; border-right: 1px solid #d1d1d6; padding: 25px 15px; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 40px; padding-left: 10px; }
+        .nav-link { padding: 14px; margin: 5px 0; border-radius: 12px; cursor: pointer; color: #8e8e93; font-weight: 500; }
+        .nav-link.active { background: #5e5ce615; color: var(--primary); }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        /* Content Area */
+        .content { flex: 1; padding: 40px; }
+        .header-title { font-size: 34px; font-weight: 700; margin-bottom: 30px; }
 
-        body { background: var(--bg); display: flex; height: 100vh; color: var(--text-main); }
-
-        /* --- Clean Sidebar --- */
-        nav {
-            width: 260px;
-            background: var(--surface);
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .logo { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-
-        .nav-link {
-            padding: 14px 18px;
-            margin-bottom: 5px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 600;
-            color: #8b8baf;
-            list-style: none;
-        }
-
-        .nav-link.active { background: #f0eeff; color: var(--primary); }
-        .nav-link:hover:not(.active) { background: #f8f9ff; transform: translateX(5px); }
-
-        /* --- Main Content --- */
-        .container { flex: 1; padding: 40px; overflow-y: auto; }
-
-        .card {
-            background: var(--surface);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
-            text-align: center;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .scan-box {
-            width: 200px; height: 200px;
-            border: 2px dashed #d1d1e9;
-            border-radius: 30px;
+        /* THE EXACT SCANNER INTERFACE FROM VIDEO */
+        .scanner-card { background: #ffffff; border-radius: 30px; padding: 50px; text-align: center; max-width: 480px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.03); }
+        
+        .scan-container {
+            width: 220px;
+            height: 220px;
             margin: 0 auto 30px;
-            display: flex;
-            align-items: center; justify-content: center;
             position: relative;
-            background: #fafbff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Animated Scan Line - Smooth but not laggy */
-        .line {
-            position: absolute; width: 80%; height: 3px;
+        /* The 4 Corner Borders (Exact Video Style) */
+        .corner { position: absolute; width: 30px; height: 30px; border: 4px solid #e5e5ea; }
+        .top-left { top: 0; left: 0; border-right: none; border-bottom: none; border-top-left-radius: 15px; }
+        .top-right { top: 0; right: 0; border-left: none; border-bottom: none; border-top-right-radius: 15px; }
+        .bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; border-bottom-left-radius: 15px; }
+        .bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; border-bottom-right-radius: 15px; }
+
+        .camera-icon { width: 60px; height: 45px; border: 3px solid #d1d1d6; border-radius: 8px; position: relative; }
+        .camera-icon::after { content: ''; position: absolute; top: 10px; left: 18px; width: 18px; height: 18px; border: 3px solid #d1d1d6; border-radius: 50%; }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
             background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-            top: 20%;
-            animation: move 2s infinite ease-in-out;
+            top: 0;
+            box-shadow: 0 0 15px var(--primary);
+            animation: moveLine 2.5s infinite linear;
         }
+        @keyframes moveLine { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
 
-        @keyframes move {
-            0%, 100% { top: 20%; }
-            50% { top: 80%; }
-        }
-
-        /* The "Heavy" but Fast Button */
-        .btn-pro {
+        .status-text { font-size: 22px; font-weight: 700; color: #1c1c1e; margin-bottom: 8px; }
+        .sub-text { color: #8e8e93; margin-bottom: 35px; font-size: 15px; }
+        
+        .btn-start {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 16px 35px;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 700;
+            padding: 16px;
+            width: 100%;
+            border-radius: 18px;
+            font-size: 17px;
+            font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
-            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.2);
+            transition: 0.3s;
         }
-
-        .btn-pro:active { transform: scale(0.95); } /* Real-time feedback */
-        .btn-pro:hover { box-shadow: 0 12px 25px rgba(108, 92, 231, 0.4); }
-
+        .btn-start:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="logo">⚡ ScanFlow</div>
+    <div class="sidebar">
+        <div class="logo">ScanFlow</div>
         <div class="nav-link active">Scanner</div>
         <div class="nav-link">Generator</div>
         <div class="nav-link">History</div>
         <div class="nav-link">Settings</div>
-    </nav>
+    </div>
 
-    <div class="container">
-        <h1 style="margin-bottom: 30px;">Dashboard</h1>
+    <div class="content">
+        <div class="header-title">Scanner</div>
         
-        <div class="card">
-            <div class="scan-box">
-                <div class="line"></div>
-                <span style="font-size: 40px;">📸</span>
+        <div class="scanner-card">
+            <div class="scan-container">
+                <div class="corner top-left"></div>
+                <div class="corner top-right"></div>
+                <div class="corner bottom-left"></div>
+                <div class="corner bottom-right"></div>
+                
+                <div class="scan-line"></div>
+                <div class="camera-icon"></div>
             </div>
-            <h2>Neural Scanner Active</h2>
-            <p style="color: #8b8baf; margin-bottom: 30px; margin-top: 10px;">Align QR code within the frame to start.</p>
-            <button class="btn-pro">START SESSION</button>
+
+            <div class="status-text">Neural scanner active</div>
+            <div class="sub-text">Align QR code within the frame to start scanning.</div>
+            
+            <button class="btn-start">START SESSION</button>
         </div>
     </div>
 
 </body>
 </html>
-
