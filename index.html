@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScanFlow Pro | Ultra-Fast Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --surface: #ffffff;
+            --bg: #f4f7fe;
+            --text-main: #1b1b2f;
+            --transition: all 0.2s ease; /* Super fast transition */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body { background: var(--bg); display: flex; height: 100vh; color: var(--text-main); }
+
+        /* --- Clean Sidebar --- */
+        nav {
+            width: 260px;
+            background: var(--surface);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .logo { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+
+        .nav-link {
+            padding: 14px 18px;
+            margin-bottom: 5px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            color: #8b8baf;
+            list-style: none;
+        }
+
+        .nav-link.active { background: #f0eeff; color: var(--primary); }
+        .nav-link:hover:not(.active) { background: #f8f9ff; transform: translateX(5px); }
+
+        /* --- Main Content --- */
+        .container { flex: 1; padding: 40px; overflow-y: auto; }
+
+        .card {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .scan-box {
+            width: 200px; height: 200px;
+            border: 2px dashed #d1d1e9;
+            border-radius: 30px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center; justify-content: center;
+            position: relative;
+            background: #fafbff;
+        }
+
+        /* Animated Scan Line - Smooth but not laggy */
+        .line {
+            position: absolute; width: 80%; height: 3px;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            top: 20%;
+            animation: move 2s infinite ease-in-out;
+        }
+
+        @keyframes move {
+            0%, 100% { top: 20%; }
+            50% { top: 80%; }
+        }
+
+        /* The "Heavy" but Fast Button */
+        .btn-pro {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 35px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.2);
+        }
+
+        .btn-pro:active { transform: scale(0.95); } /* Real-time feedback */
+        .btn-pro:hover { box-shadow: 0 12px 25px rgba(108, 92, 231, 0.4); }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">⚡ ScanFlow</div>
+        <div class="nav-link active">Scanner</div>
+        <div class="nav-link">Generator</div>
+        <div class="nav-link">History</div>
+        <div class="nav-link">Settings</div>
+    </nav>
+
+    <div class="container">
+        <h1 style="margin-bottom: 30px;">Dashboard</h1>
+        
+        <div class="card">
+            <div class="scan-box">
+                <div class="line"></div>
+                <span style="font-size: 40px;">📸</span>
+            </div>
+            <h2>Neural Scanner Active</h2>
+            <p style="color: #8b8baf; margin-bottom: 30px; margin-top: 10px;">Align QR code within the frame to start.</p>
+            <button class="btn-pro">START SESSION</button>
+        </div>
+    </div>
+
+</body>
+</html>
+
