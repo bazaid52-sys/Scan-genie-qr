@@ -1,227 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScanFlow Pro Ultimate</title>
+    <title>ScanFlow Pro v6.0 - Master</title>
+    
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <style>
-        :root { 
-            --primary: #5e5ce6; 
-            --bg: #f2f2f7; 
-            --sidebar: #ffffff;
-            --card: #ffffff;
-            --text: #1c1c1e;
-        }
-        .dark-mode { 
-            --bg: #000000; --sidebar: #1c1c1e; --card: #2c2c2e; --text: #ffffff; 
-        }
+        :root { --primary: #5e5ce6; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sidebar: #ffffff; }
+        .dark-mode { --bg: #000000; --sidebar: #1c1c1e; --card: #2c2c2e; --text: #ffffff; }
         
         body { margin: 0; font-family: -apple-system, sans-serif; display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
         
-        /* Sidebar Navigation */
+        /* Sidebar */
         .sidebar { width: 240px; background: var(--sidebar); border-right: 1px solid rgba(0,0,0,0.1); padding: 25px 15px; flex-shrink: 0; }
         .logo { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
-        .nav-link { padding: 14px; margin: 8px 0; border-radius: 12px; cursor: pointer; color: #8e8e93; font-weight: 600; transition: 0.3s; }
+        .nav-link { padding: 14px; margin: 8px 0; border-radius: 12px; cursor: pointer; color: #8e8e93; font-weight: 600; }
         .nav-link.active { background: var(--primary); color: #fff; }
 
-        /* Main Area */
         .main { flex: 1; padding: 40px; overflow-y: auto; }
         .tab { display: none; max-width: 550px; margin: 0 auto; }
-        .tab.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
+        .tab.active { display: block; }
         .card { background: var(--card); border-radius: 32px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); text-align: center; }
 
-        /* Scanner Display */
-        #reader { width: 100%; border-radius: 24px; overflow: hidden; background: #000; }
-        .scan-tools { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .tool-btn { width: 50px; height: 50px; background: #f2f2f7; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; color: #000; }
-
-        /* Custom Popup (No Chrome Link Auto-Open) */
-        #result-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; }
-        .modal-content { background: var(--card); padding: 30px; border-radius: 28px; width: 320px; text-align: center; }
-
-        /* Generator Interface */
-        .gen-modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-        .mode-btn { background: #f2f2f7; padding: 10px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; color: #333; }
-        .mode-btn.active { background: var(--primary); color: #fff; }
-
-        input { width: 100%; padding: 16px; border-radius: 14px; border: 1.5px solid #eee; margin: 15px 0; box-sizing: border-box; outline: none; background: #fff; color: #000; }
-        .btn-main { background: var(--primary); color: #fff; border: none; padding: 16px; width: 100%; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        #reader { width: 100%; border-radius: 24px; overflow: hidden; background: #000; margin-bottom: 20px; }
+        .btn { background: var(--primary); color: #fff; border: none; padding: 16px; width: 100%; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         
-        /* History List */
-        .history-item { background: var(--card); padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.05); text-align: left; }
+        /* Modal Popup */
+        #res-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-box { background: var(--card); padding: 30px; border-radius: 28px; width: 320px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        
+        .history-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid rgba(0,0,0,0.1); text-align: left; }
     </style>
 </head>
 <body>
 
-<div id="result-modal">
-    <div class="modal-content">
-        <h2 style="margin-top:0">Scan Result</h2>
-        <p id="res-text" style="word-break: break-all; color: var(--primary); font-weight: 600;"></p>
-        <button class="btn-main" onclick="window.open(lastScan, '_blank')">Open Link</button>
-        <button class="btn-main" style="background:#4a4a4a" onclick="copyResult()">Copy Link</button>
-        <button class="btn-main" style="background:#6c6c6c" onclick="shareResult()">Share Link</button>
-        <button class="btn-main" style="background:#ff3b30; margin-top:20px;" onclick="closeModal()">Close & New Scan</button>
+<div id="res-modal">
+    <div class="modal-box">
+        <h3 style="margin-top:0">Scan Result</h3>
+        <p id="scanned-val" style="word-break: break-all; color: var(--primary); font-weight: bold; font-size: 18px;"></p>
+        <button class="btn" onclick="window.open(lastResult, '_blank')">Open Link</button>
+        <button class="btn" style="background:#555" onclick="copyText()">Copy Link</button>
+        <button class="btn" style="background:#888" onclick="shareText()">Share Link</button>
+        <button class="btn" style="background:#ff3b30; margin-top:20px;" onclick="closeScan()">Scan New</button>
     </div>
 </div>
 
 <div class="sidebar">
     <div class="logo">ScanFlow</div>
-    <div class="nav-link active" onclick="changeTab('scanner', this)">Scanner</div>
-    <div class="nav-link" onclick="changeTab('generator', this)">Generator</div>
-    <div class="nav-link" onclick="changeTab('history', this)">History</div>
-    <div class="nav-link" onclick="changeTab('settings', this)">Settings</div>
+    <div class="nav-link active" onclick="switchTab('scanner', this)">Scanner</div>
+    <div class="nav-link" onclick="switchTab('generator', this)">Generator</div>
+    <div class="nav-link" onclick="switchTab('history', this)">History</div>
+    <div class="nav-link" onclick="switchTab('settings', this)">Settings</div>
 </div>
 
 <div class="main">
     <div id="scanner" class="tab active">
-        <h1 style="font-size:32px;">Scanner</h1>
+        <h1>Scanner</h1>
         <div class="card">
             <div id="reader"></div>
-            <div class="scan-tools">
-                <button class="tool-btn" title="Flashlight" onclick="toggleTorch()">🔦</button>
-                <button class="tool-btn" title="Gallery" onclick="document.getElementById('file-input').click()">🖼️</button>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn" style="flex:1;" onclick="toggleFlash()">🔦 Flash</button>
+                <button class="btn" style="flex:1;" onclick="document.getElementById('img-in').click()">🖼️ Gallery</button>
             </div>
-            <input type="file" id="file-input" hidden accept="image/*" onchange="scanFromImage(event)">
-            <button class="btn-main" onclick="startQRScanner()">ACTIVATE CAMERA</button>
+            <input type="file" id="img-in" hidden accept="image/*" onchange="fileScan(event)">
+            <button class="btn" onclick="initCamera()">Start Camera</button>
         </div>
     </div>
 
     <div id="generator" class="tab">
-        <h1 style="font-size:32px;">Generator</h1>
+        <h1>Generator</h1>
         <div class="card">
-            <div class="gen-modes">
-                <div class="mode-btn active" onclick="setMode('URL', this)">Link</div>
-                <div class="mode-btn" onclick="setMode('Text', this)">Text</div>
-                <div class="mode-btn" onclick="setMode('WiFi', this)">WiFi</div>
-                <div class="mode-btn" onclick="setMode('Mail', this)">Mail</div>
-            </div>
-            <input type="text" id="qr-input" placeholder="Enter URL here...">
-            <div id="qr-canvas" style="margin:20px auto; display:flex; justify-content:center;"></div>
-            <button class="btn-main" onclick="generateQR()">GENERATE QR</button>
-            <button class="btn-main" style="background:#8e8e93" onclick="resetGenerator()">RESET</button>
+            <input type="text" id="qr-text" placeholder="Paste link here..." style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd; margin-bottom:15px;">
+            <div id="qr-out" style="display:flex; justify-content:center; margin-bottom:20px;"></div>
+            <button class="btn" onclick="genQR()">Generate QR Code</button>
+            <button class="btn" style="background:#888" onclick="resetGen()">Reset</button>
         </div>
     </div>
 
     <div id="history" class="tab">
-        <h1 style="font-size:32px;">History</h1>
-        <div id="history-container"></div>
+        <h1>History</h1>
+        <div id="hist-list"></div>
     </div>
 
     <div id="settings" class="tab">
-        <h1 style="font-size:32px;">Settings</h1>
-        <div class="card" style="text-align: left;">
-            <h3>Appearance</h3>
-            <button class="btn-main" style="background:#eee; color:#000" onclick="setAppearance('light')">Light Mode</button>
-            <button class="btn-main" style="background:#333;" onclick="setAppearance('dark')">Dark Mode</button>
-            
-            <div style="margin-top:30px; border-top: 1px solid #eee; padding-top:20px;">
-                <p><b>App Version:</b> 5.2.0 Pro</p>
-                <p><b>Build Date:</b> March 16, 2026</p>
-                <p><b>Developer:</b> Muiz Enterprise</p>
-                <button class="btn-main" style="background:#ff3b30;" onclick="fullReset()">FACTORY RESET APP</button>
-            </div>
+        <h1>Settings</h1>
+        <div class="card" style="text-align:left;">
+            <h3>App Info</h3>
+            <p><b>Name:</b> ScanFlow Pro Master</p>
+            <p><b>Version:</b> 6.0.0 (Neural)</p>
+            <p><b>Build:</b> March 17, 2026</p>
+            <hr>
+            <h3>Personalization</h3>
+            <button class="btn" style="background:#333" onclick="setMode('dark')">Dark Mode</button>
+            <button class="btn" style="background:#eee; color:#000" onclick="setMode('light')">Light Mode</button>
+            <button class="btn" style="background:red; margin-top:30px;" onclick="clearAll()">Factory Reset App</button>
         </div>
     </div>
 </div>
 
 <script>
-    let scanner, lastScan, torchOn = false;
-    let scanHistory = JSON.parse(localStorage.getItem('sf_history')) || [];
+    let scanner, lastResult, flashOn = false;
+    let history = JSON.parse(localStorage.getItem('sf_scans_v6')) || [];
 
-    function changeTab(id, el) {
+    function switchTab(id, el) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
-        if(id === 'history') renderHistory();
+        if(id === 'history') showHistory();
     }
 
-    // --- SCANNER LOGIC ---
-    function startQRScanner() {
+    function initCamera() {
         if(scanner) scanner.clear();
         scanner = new Html5Qrcode("reader");
-        scanner.start({ facingMode: "environment" }, { fps: 15, qrbox: 250 }, (text) => {
-            onSuccess(text);
+        scanner.start({ facingMode: "environment" }, { fps: 15, qrbox: 250 }, (txt) => {
+            lastResult = txt;
+            document.getElementById('scanned-val').innerText = txt;
+            document.getElementById('res-modal').style.display = 'flex';
+            saveHist(txt);
             scanner.stop();
         });
     }
 
-    function scanFromImage(e) {
+    async function toggleFlash() {
+        if(!scanner) return;
+        flashOn = !flashOn;
+        const track = scanner.getRunningTrack();
+        if(track) await track.applyConstraints({ advanced: [{ torch: flashOn }] });
+    }
+
+    function fileScan(e) {
         const file = e.target.files[0];
         if(!file) return;
-        const tempScanner = new Html5Qrcode("reader");
-        tempScanner.scanFile(file, true).then(text => onSuccess(text)).catch(err => alert("No QR Found"));
+        const s = new Html5Qrcode("reader");
+        s.scanFile(file, true).then(txt => {
+            lastResult = txt;
+            document.getElementById('scanned-val').innerText = txt;
+            document.getElementById('res-modal').style.display = 'flex';
+            saveHist(txt);
+        }).catch(err => alert("No QR found in image!"));
     }
 
-    function onSuccess(text) {
-        lastScan = text;
-        document.getElementById('res-text').innerText = text;
-        document.getElementById('result-modal').style.display = 'flex';
-        saveToHistory(text);
+    function closeScan() { document.getElementById('res-modal').style.display = 'none'; initCamera(); }
+    function copyText() { navigator.clipboard.writeText(lastResult); alert("Copied!"); }
+    function shareText() { navigator.share({text: lastResult}); }
+    
+    function genQR() {
+        const val = document.getElementById('qr-text').value;
+        const out = document.getElementById('qr-out');
+        out.innerHTML = "";
+        new QRCode(out, { text: val, width: 170, height: 170, colorDark: "#5e5ce6" });
     }
 
-    async function toggleTorch() {
-        if(!scanner) return;
-        torchOn = !torchOn;
-        const track = scanner.getRunningTrack();
-        if(track) await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+    function resetGen() { document.getElementById('qr-text').value = ""; document.getElementById('qr-out').innerHTML = ""; }
+
+    function saveHist(v) {
+        history.push({v, d: new Date().toLocaleString()});
+        localStorage.setItem('sf_scans_v6', JSON.stringify(history));
     }
 
-    // --- POPUP ACTIONS ---
-    function closeModal() { document.getElementById('result-modal').style.display = 'none'; startQRScanner(); }
-    function copyResult() { navigator.clipboard.writeText(lastScan); alert("Copied to clipboard!"); }
-    function shareResult() { navigator.share ? navigator.share({text: lastScan}) : alert("Not supported on this browser"); }
-
-    // --- GENERATOR LOGIC ---
-    function setMode(mode, el) {
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('qr-input').placeholder = "Enter " + mode + " here...";
+    function showHistory() {
+        const list = document.getElementById('hist-list');
+        list.innerHTML = history.length ? history.map(h => `<div class="history-item"><b>${h.v}</b><br><small>${h.d}</small></div>`).reverse().join('') : "<p style='text-align:center'>No scans yet</p>";
     }
 
-    function generateQR() {
-        const val = document.getElementById('qr-input').value;
-        if(!val) return;
-        const canvas = document.getElementById('qr-canvas');
-        canvas.innerHTML = "";
-        new QRCode(canvas, { text: val, width: 160, height: 160, colorDark: "#5e5ce6" });
-    }
+    function setMode(m) { m === 'dark' ? document.body.classList.add('dark-mode') : document.body.classList.remove('dark-mode'); }
+    function clearAll() { if(confirm("Reset everything?")) { localStorage.clear(); location.reload(); } }
 
-    function resetGenerator() {
-        document.getElementById('qr-input').value = "";
-        document.getElementById('qr-canvas').innerHTML = "";
-    }
-
-    // --- HISTORY & SETTINGS ---
-    function saveToHistory(val) {
-        scanHistory.push({val, time: new Date().toLocaleString()});
-        localStorage.setItem('sf_history', JSON.stringify(scanHistory));
-    }
-
-    function renderHistory() {
-        const container = document.getElementById('history-container');
-        container.innerHTML = scanHistory.map(h => `
-            <div class="history-item">
-                <div style="font-weight:700; color:var(--primary);">${h.val}</div>
-                <div style="font-size:12px; opacity:0.6;">${h.time}</div>
-            </div>
-        `).reverse().join('');
-    }
-
-    function setAppearance(mode) {
-        mode === 'dark' ? document.body.classList.add('dark-mode') : document.body.classList.remove('dark-mode');
-    }
-
-    function fullReset() {
-        if(confirm("Full Reset? All history will be deleted.")) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
+    // Automatic check for naya version
+    console.log("ScanFlow v6.0 Loaded Successfully");
 </script>
 </body>
     </html>
