@@ -37,7 +37,6 @@
 
         #reader { width: 100%; border-radius: 24px; overflow: hidden; background: #000; margin-bottom: 20px; }
         
-        /* Camera Controls Style */
         .cam-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .btn { background: var(--primary); color: #fff; border: none; padding: 16px; width: 100%; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .btn-sec { background: #555; }
@@ -62,6 +61,7 @@
         <p id="scanned-val" style="word-break: break-all; color: var(--primary); font-weight: bold;"></p>
         <button class="btn" onclick="window.open(lastResult, '_blank')">Open Link</button>
         <button class="btn" style="background:#555" onclick="copyText()">Copy Link</button>
+        <button class="btn" style="background:#007aff" onclick="shareResult()">Share Result</button>
         <button class="btn" style="background:#ff3b30; margin-top:20px;" onclick="closeScan()">Scan New</button>
     </div>
 </div>
@@ -139,13 +139,10 @@
         if(id === 'history') showHistory();
     }
 
-    // Camera with Flashlight Logic
     async function initCamera() {
         if(scanner) await scanner.clear();
         scanner = new Html5Qrcode("reader");
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-        
-        scanner.start({ facingMode: "environment" }, config, (txt) => {
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
             handleResult(txt);
             scanner.stop();
         }).catch(err => alert("Camera error: " + err));
@@ -154,9 +151,8 @@
     function toggleFlash() {
         if(!scanner) return;
         isFlashOn = !isFlashOn;
-        scanner.applyVideoConstraints({
-            advanced: [{ torch: isFlashOn }]
-        }).catch(e => alert("Torch not supported on this device"));
+        scanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] })
+        .catch(e => alert("Torch not supported"));
     }
 
     function scanFile(input) {
@@ -164,7 +160,7 @@
         const html5QrCode = new Html5Qrcode("reader");
         html5QrCode.scanFile(input.files[0], true)
             .then(txt => handleResult(txt))
-            .catch(err => alert("No QR code found in image"));
+            .catch(err => alert("No QR found"));
     }
 
     function handleResult(txt) {
@@ -174,7 +170,15 @@
         saveHist("Scan: " + txt);
     }
 
-    // Generator & Others
+    function shareResult() {
+        if (navigator.share) {
+            navigator.share({ title: 'Scan Result', text: lastResult })
+            .catch(err => console.log('Error sharing', err));
+        } else {
+            alert("Sharing not supported on this browser/app");
+        }
+    }
+
     function setGenMode(mode, ph, el) {
         document.getElementById('qr-input').placeholder = ph;
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -191,7 +195,7 @@
 
     function resetGen() { document.getElementById('qr-input').value = ""; document.getElementById('qr-wrap').innerHTML = ""; }
     function setTheme(t) { 
-        document.body.classList.remove('ocean-theme', 'sunset-theme', 'violet-theme');
+        document.body.classList.remove('ocean-theme', 'sunset-theme');
         if(t !== 'classic') document.body.classList.add(t + '-theme');
     }
     function setAppMode(m) { m === 'dark' ? document.body.classList.add('dark-theme') : document.body.classList.remove('dark-theme'); }
