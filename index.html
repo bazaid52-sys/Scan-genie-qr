@@ -16,7 +16,6 @@
             --sidebar: #ffffff;
         }
 
-        /* Themes - Pure App Ka Rang Badlega */
         .ocean-theme { --primary: #007aff; --bg: #e5f1ff; --sidebar: #cce3ff; }
         .sunset-theme { --primary: #ff3b30; --bg: #ffe5e5; --sidebar: #ffcccc; }
         .violet-theme { --primary: #af52de; --bg: #f5e5ff; --sidebar: #eccfca; }
@@ -24,7 +23,6 @@
         
         body { margin: 0; font-family: -apple-system, sans-serif; display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; transition: 0.3s; }
         
-        /* Sidebar */
         .sidebar { width: 240px; background: var(--sidebar); border-right: 1px solid rgba(0,0,0,0.1); padding: 25px 15px; flex-shrink: 0; }
         .logo { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
         .nav-link { padding: 14px; margin: 8px 0; border-radius: 12px; cursor: pointer; color: #8e8e93; font-weight: 600; }
@@ -37,23 +35,19 @@
 
         .card { background: var(--card); border-radius: 32px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); text-align: center; }
 
-        /* Scanner */
         #reader { width: 100%; border-radius: 24px; overflow: hidden; background: #000; margin-bottom: 20px; }
-        .btn { background: var(--primary); color: #fff; border: none; padding: 16px; width: 100%; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
         
-        /* Modal Popup */
+        /* Camera Controls Style */
+        .cam-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn { background: var(--primary); color: #fff; border: none; padding: 16px; width: 100%; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-sec { background: #555; }
+
         #res-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; }
         .modal-box { background: var(--card); padding: 30px; border-radius: 28px; width: 320px; text-align: center; }
         
-        /* Generator & Settings */
         .gen-modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
         .mode-btn { background: #f2f2f7; padding: 12px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; color: #000; text-align: center; }
         .mode-btn.active { background: var(--primary); color: #fff; }
-
-        .color-box { display: flex; gap: 15px; margin: 20px 0; }
-        .color-pick { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
-        .color-pick.active { border-color: #000; }
 
         input { width: 100%; padding: 16px; border-radius: 15px; border: 1.5px solid #eee; margin: 15px 0; box-sizing: border-box; outline: none; }
         #qr-wrap { padding: 20px; background: white; display: inline-block; border-radius: 20px; margin: 20px 0; }
@@ -64,7 +58,7 @@
 
 <div id="res-modal">
     <div class="modal-box">
-        <h3 style="margin-top:0">Scan Result</h3>
+        <h3>Scan Result</h3>
         <p id="scanned-val" style="word-break: break-all; color: var(--primary); font-weight: bold;"></p>
         <button class="btn" onclick="window.open(lastResult, '_blank')">Open Link</button>
         <button class="btn" style="background:#555" onclick="copyText()">Copy Link</button>
@@ -85,7 +79,12 @@
         <h1>Scanner</h1>
         <div class="card">
             <div id="reader"></div>
-            <button class="btn" onclick="initCamera()">Start Camera</button>
+            <button class="btn" id="start-btn" onclick="initCamera()">Start Camera</button>
+            <div class="cam-controls">
+                <button class="btn btn-sec" onclick="toggleFlash()">Flashlight</button>
+                <button class="btn btn-sec" onclick="document.getElementById('file-input').click()">Gallery</button>
+            </div>
+            <input type="file" id="file-input" accept="image/*" style="display:none" onchange="scanFile(this)">
         </div>
     </div>
 
@@ -94,17 +93,14 @@
         <div class="card">
             <div class="gen-modes">
                 <div class="mode-btn active" onclick="setGenMode('URL', 'https://', this)">Link</div>
-                <div class="mode-btn" onclick="setGenMode('TEXT', 'Enter message...', this)">Text</div>
-                <div class="mode-btn" onclick="setGenMode('WIFI', 'WiFi Name:Password', this)">WiFi</div>
-                <div class="mode-btn" onclick="setGenMode('MAIL', 'email@example.com', this)">Mail</div>
+                <div class="mode-btn" onclick="setGenMode('TEXT', 'Message...', this)">Text</div>
+                <div class="mode-btn" onclick="setGenMode('WIFI', 'WiFi:Name:Pass', this)">WiFi</div>
+                <div class="mode-btn" onclick="setGenMode('MAIL', 'email@to.com', this)">Mail</div>
             </div>
-            
             <input type="text" id="qr-input" placeholder="https://">
-            
             <div id="qr-wrap"></div>
-            
             <button class="btn" onclick="generateQR()">Generate QR Code</button>
-            <button class="btn" style="background:#888" onclick="resetGen()">Reset</button>
+            <button class="btn btn-sec" onclick="resetGen()">Reset</button>
         </div>
     </div>
 
@@ -116,25 +112,24 @@
     <div id="settings" class="tab">
         <h1>Settings</h1>
         <div class="card" style="text-align:left;">
-            <h3>App Theme Color</h3>
-            <div class="color-box">
-                <div class="color-pick active" style="background:#5e5ce6;" onclick="setTheme('classic', this)"></div>
-                <div class="color-pick" style="background:#007aff;" onclick="setTheme('ocean', this)"></div>
-                <div class="color-pick" style="background:#ff3b30;" onclick="setTheme('sunset', this)"></div>
-                <div class="color-pick" style="background:#af52de;" onclick="setTheme('violet', this)"></div>
+            <h3>App Theme</h3>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <div style="width:40px; height:40px; border-radius:50%; background:#5e5ce6; cursor:pointer;" onclick="setTheme('classic')"></div>
+                <div style="width:40px; height:40px; border-radius:50%; background:#007aff; cursor:pointer;" onclick="setTheme('ocean')"></div>
+                <div style="width:40px; height:40px; border-radius:50%; background:#ff3b30; cursor:pointer;" onclick="setTheme('sunset')"></div>
             </div>
-            <h3>Display Mode</h3>
             <button class="btn" style="background:#333" onclick="setAppMode('dark')">Dark Mode</button>
-            <button class="btn" style="background:#eee; color:#000" onclick="setAppMode('light')">Light Mode</button>
+            <button class="btn btn-sec" onclick="setAppMode('light')">Light Mode</button>
             <hr>
-            <button class="btn" style="background:red; margin-top:30px;" onclick="clearAll()">Clear All History</button>
+            <button class="btn" style="background:red" onclick="clearAll()">Factory Reset</button>
         </div>
     </div>
 </div>
 
 <script>
     let scanner, lastResult;
-    let history = JSON.parse(localStorage.getItem('muiz_v7_data')) || [];
+    let isFlashOn = false;
+    let history = JSON.parse(localStorage.getItem('sf_v7_data')) || [];
 
     function switchTab(id, el) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -144,7 +139,42 @@
         if(id === 'history') showHistory();
     }
 
-    // Generator Logic
+    // Camera with Flashlight Logic
+    async function initCamera() {
+        if(scanner) await scanner.clear();
+        scanner = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        
+        scanner.start({ facingMode: "environment" }, config, (txt) => {
+            handleResult(txt);
+            scanner.stop();
+        }).catch(err => alert("Camera error: " + err));
+    }
+
+    function toggleFlash() {
+        if(!scanner) return;
+        isFlashOn = !isFlashOn;
+        scanner.applyVideoConstraints({
+            advanced: [{ torch: isFlashOn }]
+        }).catch(e => alert("Torch not supported on this device"));
+    }
+
+    function scanFile(input) {
+        if (input.files.length === 0) return;
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.scanFile(input.files[0], true)
+            .then(txt => handleResult(txt))
+            .catch(err => alert("No QR code found in image"));
+    }
+
+    function handleResult(txt) {
+        lastResult = txt;
+        document.getElementById('scanned-val').innerText = txt;
+        document.getElementById('res-modal').style.display = 'flex';
+        saveHist("Scan: " + txt);
+    }
+
+    // Generator & Others
     function setGenMode(mode, ph, el) {
         document.getElementById('qr-input').placeholder = ph;
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -152,49 +182,22 @@
     }
 
     function generateQR() {
-        const data = document.getElementById('qr-input').value;
-        if(!data) return;
-        const out = document.getElementById('qr-wrap');
-        out.innerHTML = "";
-        new QRCode(out, {
-            text: data,
-            width: 180,
-            height: 180,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-        saveHist("Generated: " + data);
+        const val = document.getElementById('qr-input').value;
+        if(!val) return;
+        document.getElementById('qr-wrap').innerHTML = "";
+        new QRCode(document.getElementById('qr-wrap'), { text: val, width: 180, height: 180 });
+        saveHist("Gen: " + val);
     }
 
     function resetGen() { document.getElementById('qr-input').value = ""; document.getElementById('qr-wrap').innerHTML = ""; }
-
-    // Settings Theme Logic
-    function setTheme(theme, el) {
+    function setTheme(t) { 
         document.body.classList.remove('ocean-theme', 'sunset-theme', 'violet-theme');
-        document.querySelectorAll('.color-pick').forEach(p => p.classList.remove('active'));
-        if(theme !== 'classic') document.body.classList.add(theme + '-theme');
-        el.classList.add('active');
+        if(t !== 'classic') document.body.classList.add(t + '-theme');
     }
-
     function setAppMode(m) { m === 'dark' ? document.body.classList.add('dark-theme') : document.body.classList.remove('dark-theme'); }
-
-    // Scanner
-    function initCamera() {
-        if(scanner) scanner.clear();
-        scanner = new Html5Qrcode("reader");
-        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
-            lastResult = txt;
-            document.getElementById('scanned-val').innerText = txt;
-            document.getElementById('res-modal').style.display = 'flex';
-            saveHist("Scanned: " + txt);
-            scanner.stop();
-        });
-    }
-
     function closeScan() { document.getElementById('res-modal').style.display = 'none'; initCamera(); }
     function copyText() { navigator.clipboard.writeText(lastResult); alert("Copied!"); }
-    function saveHist(v) { history.push({v, d: new Date().toLocaleString()}); localStorage.setItem('muiz_v7_data', JSON.stringify(history)); }
+    function saveHist(v) { history.push({v, d: new Date().toLocaleTimeString()}); localStorage.setItem('sf_v7_data', JSON.stringify(history)); }
     function showHistory() { const list = document.getElementById('hist-list'); list.innerHTML = history.map(h => `<div class="history-item"><b>${h.v}</b><br><small>${h.d}</small></div>`).reverse().join(''); }
     function clearAll() { localStorage.clear(); location.reload(); }
 </script>
